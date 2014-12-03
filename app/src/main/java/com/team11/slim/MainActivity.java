@@ -1,5 +1,6 @@
 package com.team11.slim;
 
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -23,6 +25,7 @@ public class MainActivity extends ActionBarActivity
     private SimpleAdapter mAdapter;
     private ArrayList<HashMap<String,String>> mList;
     private ListView mListView;
+    private Client mClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -53,6 +56,24 @@ public class MainActivity extends ActionBarActivity
 
         // set up the drawer's list view with items and click listener
         mListView.setAdapter(mAdapter);
+
+        try {
+            mClient = new Client("192.168.2.6", 5555, "Andrew")
+            {
+                @Override
+                protected void onProgressUpdate(String... values)
+                {
+                    super.onProgressUpdate(values);
+                    addItem( "Me", values[0] );
+                    // notify the adapter that the data set has changed. This means that new message received
+                    // from server was added to the list
+                    mAdapter.notifyDataSetChanged();
+                }
+            };
+            mClient.execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
