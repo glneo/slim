@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -26,6 +27,9 @@ public class MainActivity extends ActionBarActivity
     private ArrayList<HashMap<String,String>> mList;
     private ListView mListView;
     private Client mClient;
+    private String mServerAddress;
+    private int mPort;
+    private String mUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -57,23 +61,35 @@ public class MainActivity extends ActionBarActivity
         // set up the drawer's list view with items and click listener
         mListView.setAdapter(mAdapter);
 
-        try {
-            mClient = new Client("192.168.2.6", 5555, "Andrew")
+        mServerAddress = getIntent().getExtras().getString(ConnectActivity.ADDRESS_MESSAGE);
+        mPort = (Integer) getIntent().getExtras().get(ConnectActivity.PORT_MESSAGE);
+        mUserName = getIntent().getExtras().getString(ConnectActivity.USERNAME_MESSAGE);
+
+        mClient = new Client(mServerAddress, mPort, mUserName)
+        {
+            @Override
+            protected void onProgressUpdate(String... values)
             {
-                @Override
-                protected void onProgressUpdate(String... values)
-                {
-                    super.onProgressUpdate(values);
-                    addItem( "Me", values[0] );
-                    // notify the adapter that the data set has changed. This means that new message received
-                    // from server was added to the list
-                    mAdapter.notifyDataSetChanged();
-                }
-            };
-            mClient.execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                super.onProgressUpdate(values);
+                addItem( "Me", values[0] );
+                // notify the adapter that the data set has changed. This means that new message received
+                // from server was added to the list
+                mAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            protected void onPostExecute(final Void myVoid)
+            {
+                mClient = null;
+            }
+
+            @Override
+            protected void onCancelled()
+            {
+                mClient = null;
+            }
+        };
+        mClient.execute();
     }
 
     @Override

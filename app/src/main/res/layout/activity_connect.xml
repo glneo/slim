@@ -1,0 +1,62 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.team11.slim.ConnectActivity">
+
+    <!-- Login form -->
+    <ScrollView style="@style/AppTheme"
+        android:id="@+id/form_connect"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout style="@style/LoginFormContainer"
+            android:orientation="vertical"
+            android:layout_marginTop="60dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_launcher"
+                android:layout_gravity="center"
+                android:contentDescription="@string/connect_logo" />
+
+            <EditText
+                android:id="@+id/edit_text_server_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:hint="@string/connect_server_address"
+                android:background="@drawable/text_input_border"
+                android:inputType="textUri"
+                android:singleLine="true"
+                android:maxLines="1"
+                android:layout_marginTop="30dp"
+                android:onClick="textFieldResponder"
+                android:clickable="true"/>
+
+            <EditText
+                android:id="@+id/edit_text_user_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/text_input_border"
+                android:hint="@string/connect_user_name"
+                android:layout_marginTop="10dp"
+                android:onClick="textFieldResponder"
+                android:clickable="true"/>
+
+            <Button
+                android:id="@+id/connect_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/connect_connect"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="15dp"
+                android:nestedScrollingEnabled="false"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:onClick="attemptLogin"/>
+
+        </LinearLayout>
+    </ScrollView>
+</merge>

@@ -13,30 +13,19 @@ import java.net.Socket;
 
 public class Client extends AsyncTask<Void,String,Void>
 {
-    public String serverAddress = null;
-    public int serverPort;
-    public String myName = null;
-    public Socket client = null;
+    private final String mAddress;
+    private final int mPort;
+    private final String mUserName;
+    private Socket mSocket;
+
     private BufferedReader input;
     private BufferedWriter output;
 
-    Client( String serverAddress, int serverPort, String myName ) throws IOException
+    Client(String address, int port, String userName)
     {
-        this.serverAddress = serverAddress;
-        this.serverPort = serverPort;
-        this.myName = myName;
-    }
-
-    public void disconect()
-    {
-        try
-        {
-            client.close();
-        }
-        catch (IOException e)
-        {
-            // cannot close socket!?
-        }
+        mAddress = address;
+        mPort = port;
+        mUserName = userName;
     }
 
     public void send( Message message )
@@ -49,7 +38,6 @@ public class Client extends AsyncTask<Void,String,Void>
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -59,12 +47,12 @@ public class Client extends AsyncTask<Void,String,Void>
     {
         try
         {
-            this.client = new Socket( serverAddress, serverPort );
-            output = new BufferedWriter( new OutputStreamWriter( client.getOutputStream() ) );
-            output.write( myName );
+            mSocket = new Socket(mAddress, mPort);
+            output = new BufferedWriter( new OutputStreamWriter( mSocket.getOutputStream() ) );
+            output.write( mUserName );
             output.write( '\n' );
             output.flush();
-            input = new BufferedReader( new InputStreamReader(client.getInputStream() ) );
+            input = new BufferedReader( new InputStreamReader( mSocket.getInputStream() ) );
             while( !isCancelled() )
             {
                 Message inputFromServer = (new Gson()).fromJson(input.readLine(), Message.class);
@@ -85,11 +73,12 @@ public class Client extends AsyncTask<Void,String,Void>
                     input.close();
                 if( output != null )
                     output.close();
-				if( client != null )
-					client.close();
+				if( mSocket != null )
+					mSocket.close();
 			}
 			catch (IOException e)
 			{
+                e.printStackTrace();
 			}
 		}
         return null;
