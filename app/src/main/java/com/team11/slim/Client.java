@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-public class Client extends AsyncTask<Void,String,Void>
+public class Client extends AsyncTask<Void,Message,Void>
 {
     private final String mAddress;
     private final int mPort;
@@ -28,17 +28,23 @@ public class Client extends AsyncTask<Void,String,Void>
         mUserName = userName;
     }
 
-    public void send( Message message )
+    public boolean send( Message message )
     {
         try
         {
-            output.write((new Gson()).toJson(message));
-            output.write( '\n' );
-            output.flush();
+            if( output != null )
+            {
+                output.write((new Gson()).toJson(message));
+                output.write('\n');
+                output.flush();
+                return true;
+            }
+            else
+                return false;
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            return false;
         }
     }
 
@@ -56,7 +62,7 @@ public class Client extends AsyncTask<Void,String,Void>
             while( !isCancelled() )
             {
                 Message inputFromServer = (new Gson()).fromJson(input.readLine(), Message.class);
-                publishProgress( inputFromServer.messageText );
+                publishProgress( inputFromServer );
             }
         }
         catch( IOException e )

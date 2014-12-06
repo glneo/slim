@@ -67,11 +67,6 @@ public class ConnectActivity extends Activity
         });
     }
 
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
     public void attemptLogin( View v )
     {
         // Reset errors
@@ -115,7 +110,7 @@ public class ConnectActivity extends Activity
 
         if (cancel)
         {
-            // There was an error; don't attempt login and focus the first
+            // There was an error; don't attempt the connection and focus the first
             // form field with an error.
             focusView.requestFocus();
         }

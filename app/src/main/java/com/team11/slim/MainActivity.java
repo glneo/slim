@@ -1,6 +1,7 @@
 package com.team11.slim;
 
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -68,10 +70,11 @@ public class MainActivity extends ActionBarActivity
         mClient = new Client(mServerAddress, mPort, mUserName)
         {
             @Override
-            protected void onProgressUpdate(String... values)
+            protected void onProgressUpdate(Message... values)
             {
                 super.onProgressUpdate(values);
-                addItem( "Me", values[0] );
+                if( values[0].type == MessageType.Text )
+                    addItem( values[0].peer.name, values[0].messageText );
                 // notify the adapter that the data set has changed. This means that new message received
                 // from server was added to the list
                 mAdapter.notifyDataSetChanged();
@@ -129,9 +132,48 @@ public class MainActivity extends ActionBarActivity
     private class SendClickListener implements View.OnClickListener
     {
         @Override
-        public void onClick(View view)
+        public void onClick(final View view)
         {
-            addItem( "TESTUSER", "Hello, World!" );
+            String messageText = mNewMessageText.getText().toString();
+            mNewMessageText.setText(""); // Clear message
+            if( messageText != "" )
+            {
+                final Message message = new Message(new Peer(mUserName, ""),
+                                                MessageType.Text,
+                                                messageText);
+
+                AsyncTask<Message, Void, Boolean> sendTask = new AsyncTask<Message, Void, Boolean>()
+                {
+                    @Override
+                    protected Boolean doInBackground(Message... messages)
+                    {
+                        int count = messages.length;
+                        for( int i = 0; i < count; i++ )
+                        {
+                            Log.d(LOG_TAG, "Sending message: " + messages[i].messageText);
+                            if( mClient.send(messages[i]) == false )
+                                return false;
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Boolean aBoolean)
+                    {
+                        super.onPostExecute(aBoolean);
+                        if( aBoolean )
+                            Toast.makeText(view.getContext(), "Message Sent", Toast.LENGTH_SHORT).show();
+                        else
+                            Toast.makeText(view.getContext(), "Failed to Send Message", Toast.LENGTH_SHORT).show();
+                    }
+                };
+
+                if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+                    sendTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, message);
+                } else {
+                    sendTask.execute(message);
+                }
+            }
         }
     }
 }
