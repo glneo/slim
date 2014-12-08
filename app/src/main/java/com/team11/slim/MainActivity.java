@@ -1,5 +1,6 @@
 package com.team11.slim;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
@@ -14,8 +15,6 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -24,13 +23,9 @@ public class MainActivity extends ActionBarActivity
     private final String LOG_TAG = "MAIN_ACT";
 
     private EditText mNewMessageText;
-    private ImageButton mSendButton;
     private SimpleAdapter mAdapter;
     private ArrayList<HashMap<String,String>> mList;
-    private ListView mListView;
     private Client mClient;
-    private String mServerAddress;
-    private int mPort;
     private String mUserName;
 
     @Override
@@ -42,10 +37,10 @@ public class MainActivity extends ActionBarActivity
 
         // get layout instances
         mNewMessageText = (EditText)findViewById(R.id.message);
-        mSendButton = (ImageButton)findViewById(R.id.send);
+        ImageButton mSendButton = (ImageButton) findViewById(R.id.send);
         if(mSendButton != null)
-            mSendButton.setOnClickListener( new SendClickListener() );
-        mListView = (ListView)findViewById(R.id.listView);
+            mSendButton.setOnClickListener(new SendClickListener());
+        ListView mListView = (ListView) findViewById(R.id.listView);
 
         // Each row in the list stores the user name and text
         mList = new ArrayList<HashMap<String,String>>();
@@ -63,11 +58,11 @@ public class MainActivity extends ActionBarActivity
         // set up the drawer's list view with items and click listener
         mListView.setAdapter(mAdapter);
 
-        mServerAddress = getIntent().getExtras().getString(ConnectActivity.ADDRESS_MESSAGE);
-        mPort = (Integer) getIntent().getExtras().get(ConnectActivity.PORT_MESSAGE);
+        String mServerAddress = getIntent().getExtras().getString(ConnectActivity.ADDRESS_MESSAGE);
+        int mPort = (Integer) getIntent().getExtras().get(ConnectActivity.PORT_MESSAGE);
         mUserName = getIntent().getExtras().getString(ConnectActivity.USERNAME_MESSAGE);
 
-        mClient = new Client(mServerAddress, mPort, mUserName)
+        mClient = new Client(getApplicationContext(), mServerAddress, mPort, mUserName)
         {
             @Override
             protected void onProgressUpdate(Message... values)
@@ -84,12 +79,14 @@ public class MainActivity extends ActionBarActivity
             protected void onPostExecute(final Void myVoid)
             {
                 mClient = null;
+                doDisconnect();
             }
 
             @Override
             protected void onCancelled()
             {
                 mClient = null;
+                doDisconnect();
             }
         };
         mClient.execute();
@@ -129,6 +126,13 @@ public class MainActivity extends ActionBarActivity
         mAdapter.notifyDataSetChanged();
     }
 
+    public void doDisconnect()
+    {
+        Intent intent = new Intent(this, ConnectActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
     private class SendClickListener implements View.OnClickListener
     {
         @Override
@@ -136,7 +140,7 @@ public class MainActivity extends ActionBarActivity
         {
             String messageText = mNewMessageText.getText().toString();
             mNewMessageText.setText(""); // Clear message
-            if( messageText != "" )
+            if(!messageText.equals(""))
             {
                 final Message message = new Message(new Peer(mUserName, ""),
                                                 MessageType.Text,
@@ -147,11 +151,9 @@ public class MainActivity extends ActionBarActivity
                     @Override
                     protected Boolean doInBackground(Message... messages)
                     {
-                        int count = messages.length;
-                        for( int i = 0; i < count; i++ )
-                        {
-                            Log.d(LOG_TAG, "Sending message: " + messages[i].messageText);
-                            if( mClient.send(messages[i]) == false )
+                        for (Message message1 : messages) {
+                            Log.d(LOG_TAG, "Sending message: " + message1.messageText);
+                            if (!mClient.send(message1))
                                 return false;
                         }
                         return true;

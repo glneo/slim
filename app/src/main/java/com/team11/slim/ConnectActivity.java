@@ -1,37 +1,14 @@
 package com.team11.slim;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.LoaderManager.LoaderCallbacks;
-import android.content.ContentResolver;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build.VERSION;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ConnectActivity extends Activity
 {
@@ -87,23 +64,11 @@ public class ConnectActivity extends Activity
             focusView = mUserName;
             cancel = true;
         }
-        else if (!isUserNameValid(userName))
-        {
-            mUserName.setError(getString(R.string.connect_user_name_invalid));
-            focusView = mUserName;
-            cancel = true;
-        }
 
         // Check for a valid server address
         if (TextUtils.isEmpty(serverAddress))
         {
             mServerAddress.setError(getString(R.string.connect_field_required));
-            focusView = mServerAddress;
-            cancel = true;
-        }
-        else if (!isServerAddressValid(serverAddress))
-        {
-            mServerAddress.setError(getString(R.string.connect_server_address_invalid));
             focusView = mServerAddress;
             cancel = true;
         }
@@ -121,17 +86,8 @@ public class ConnectActivity extends Activity
             intent.putExtra(USERNAME_MESSAGE, userName);
             intent.putExtra(PORT_MESSAGE, 5555);
             startActivity(intent);
+            finish();
         }
-    }
-
-    private boolean isServerAddressValid(String email)
-    {
-        return true;
-    }
-
-    private boolean isUserNameValid(String password)
-    {
-        return true;
     }
 
     public void textFieldResponder(View v) {

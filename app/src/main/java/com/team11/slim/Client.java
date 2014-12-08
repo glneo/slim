@@ -1,5 +1,6 @@
 package com.team11.slim;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import com.google.gson.Gson;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.List;
 
 public class Client extends AsyncTask<Void,Message,Void>
 {
@@ -18,14 +20,17 @@ public class Client extends AsyncTask<Void,Message,Void>
     private final String mUserName;
     private Socket mSocket;
 
+    private MessageDataSource dbSource;
+
     private BufferedReader input;
     private BufferedWriter output;
 
-    Client(String address, int port, String userName)
+    Client(Context context, String address, int port, String userName)
     {
         mAddress = address;
         mPort = port;
         mUserName = userName;
+        dbSource = new MessageDataSource(context);
     }
 
     public boolean send( Message message )
@@ -51,6 +56,9 @@ public class Client extends AsyncTask<Void,Message,Void>
     @Override
     protected Void doInBackground(Void... voids)
     {
+        List<Message> messages = dbSource.getAllMessages();
+        for (Message message : messages)
+            publishProgress( message );
         try
         {
             mSocket = new Socket(mAddress, mPort);
@@ -62,6 +70,7 @@ public class Client extends AsyncTask<Void,Message,Void>
             while( !isCancelled() )
             {
                 Message inputFromServer = (new Gson()).fromJson(input.readLine(), Message.class);
+                dbSource.addMessage( inputFromServer );
                 publishProgress( inputFromServer );
             }
         }
